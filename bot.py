@@ -45,7 +45,7 @@ async def serverstats(ctx):
     await ctx.send(f"Quick Chromie Craft Stats:\n{player_count}\nAlliance v Horde (Online numbers)\n{faction_count}")
 
 @bot.command()
-async def stonks(ctx):
+async def stonks(ctx): #todo. Make both code and output less ugly
     try:
         pcheck1 = requests.get("https://www.wowauctions.net/auctionHouse/chromie-craft/chromiecraft/mergedAh/netherweave-cloth-21877")
         pcheck1_soup = BeautifulSoup(pcheck1.text, 'html.parser')
@@ -59,7 +59,26 @@ async def stonks(ctx):
                 'AvgBuyout': f"{stats['avg_price'] // 100}s {stats['avg_price'] % 100}c",
                 'MinBuyout': f"{stats['minimum_buyout'] // 100}s {stats['minimum_buyout'] % 100}c"
         }
-            await ctx.send(f"Here's the Chromie Industrial Average (CJIA)\nAmount, Avg Buyout, Min Buyout, Monthly Avg Price\nNetherweave Cloth - {data1['Amount']}, {data1['AvgBuyout']}, {data1['MinBuyout']}\nSource: https://www.wowauctions.net/")
+            await ctx.send(f"Here's the Chromie Industrial Average (CIA)\nAmount, Average Buyout\nNetherweave Cloth - {data1['Amount']}, {data1['AvgBuyout']}")
+        else:
+            ctx.send("Error: the website layout has changed and the bot needs updating.")
+    except Exception as e:
+        await ctx.send(f"For various possible reasons, an error occured. Error: {e}")
+
+    try:
+        pcheck2 = requests.get("https://www.wowauctions.net/auctionHouse/chromie-craft/chromiecraft/mergedAh/void-crystal-22450")
+        pcheck2_soup = BeautifulSoup(pcheck2.text, 'html.parser')
+        script_tag = pcheck2_soup.find('script', id='__NEXT_DATA__')
+
+        if script_tag:
+            data = json.loads(script_tag.string)
+            stats = data['props']['pageProps']['item']['stats']
+            data1 = {
+                'Amount': stats['item_count'],
+                'AvgBuyout': f"{stats['avg_price'] // 100}s {stats['avg_price'] % 100}c",
+                'MinBuyout': f"{stats['minimum_buyout'] // 100}s {stats['minimum_buyout'] % 100}c"
+        }
+            await ctx.send(f"Void Crystal - {data1['Amount']}, {data1['AvgBuyout']}\nSource: https://www.wowauctions.net/")
         else:
             ctx.send("Error: the website layout has changed and the bot needs updating.")
     except Exception as e:
