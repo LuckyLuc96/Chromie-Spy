@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from key import TOKEN
 import requests
+import json
 from bs4 import BeautifulSoup
 
 
@@ -45,16 +46,22 @@ async def serverstats(ctx):
 
 @bot.command()
 async def stonks(ctx):
-    pcheck1 = requests.get("https://www.wowauctions.net/auctionHouse/chromie-craft/chromiecraft/mergedAh/netherweave-cloth-21877")
-    pcheck1_soup = BeautifulSoup(pcheck1.text, 'html.parser')
     try:
-        data1 = {
-            'Amount': pcheck1_soup.find('h3', string='Amount').find_next('td').get_text(strip=True),
-            'AvgBuyout': pcheck1_soup.find('h3', string='Average Buyout').find_next ('table').get_text(strip=True),
-            'MinBuyout': pcheck1_soup.find('h3', string='Minimum Bid').find_next('table').get_text(strip=True),
-            'Monthly': pcheck1_soup.find('h3', string='Monthly Average Price').find_next('table').get_text(strip=True)
+        pcheck1 = requests.get("https://www.wowauctions.net/auctionHouse/chromie-craft/chromiecraft/mergedAh/netherweave-cloth-21877")
+        pcheck1_soup = BeautifulSoup(pcheck1.text, 'html.parser')
+        script_tag = pcheck1_soup.find('script', id='__NEXT_DATA__')
+
+        if script_tag:
+            data = json.loads(script_tag.string)
+            stats = data['props']['pageProps']['item']['stats']
+            data1 = {
+                'Amount': stats['item_count'],
+                'AvgBuyout': f"{stats['avg_price'] // 100}s {stats['avg_price'] % 100}c",
+                'MinBuyout': f"{stats['minimum_buyout'] // 100}s {stats['minimum_buyout'] % 100}c"
         }
-        await ctx.send(f"Here's the Chromie Industrial Average (CJIA)\nAmount, Avg Buyout, Min Buyout, Monthly Avg Price\nNetherweave Cloth\n{data1}")
+            await ctx.send(f"Here's the Chromie Industrial Average (CJIA)\nAmount, Avg Buyout, Min Buyout, Monthly Avg Price\nNetherweave Cloth - {data1['Amount']}, {data1['AvgBuyout']}, {data1['MinBuyout']}\nSource: https://www.wowauctions.net/")
+        else:
+            ctx.send("Error: the website layout has changed and the bot needs updating.")
     except Exception as e:
         await ctx.send(f"For various possible reasons, an error occured. Error: {e}")
 
