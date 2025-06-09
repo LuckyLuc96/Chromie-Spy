@@ -30,6 +30,7 @@ async def armory(ctx, *, character_name):
     armory_url = f"https://www.chromiecraft.com/en/armory/?character/ChromieCraft/{upper_name}"
     await ctx.send(f"The armory link for **{upper_name}**:\n<{armory_url}>")
 
+
 @bot.command()
 async def serverstats(ctx):
     server_status = requests.get("https://www.chromiecraft.com/en/server-status/")
@@ -54,16 +55,14 @@ async def stonks(ctx): #todo. Make both code and output less ugly
         if script_tag:
             data = json.loads(script_tag.string)
             stats = data['props']['pageProps']['item']['stats']
-            data1 = {
+            data = {
                 'Amount': stats['item_count'],
                 'AvgBuyout': f"{stats['avg_price'] // 100}s {stats['avg_price'] % 100}c",
                 'MinBuyout': f"{stats['minimum_buyout'] // 100}s {stats['minimum_buyout'] % 100}c"
         }
-            await ctx.send(f"Here's the Chromie Industrial Average (CIA)\nAmount, Average Buyout\nNetherweave Cloth - {data1['Amount']}, {data1['AvgBuyout']}")
-        else:
-            ctx.send("Error: the website layout has changed and the bot needs updating.")
+            await ctx.send(f"Here's the Chromie Industrial Average (CIA)\nNetherweave Cloth - # of auctions: {data['Amount']} Price: {data['AvgBuyout']}")
     except Exception as e:
-        await ctx.send(f"For various possible reasons, an error occured. Error: {e}")
+        print(f"Stonks pcheck1 error: {e}")
 
     try:
         pcheck2 = requests.get("https://www.wowauctions.net/auctionHouse/chromie-craft/chromiecraft/mergedAh/void-crystal-22450")
@@ -73,16 +72,17 @@ async def stonks(ctx): #todo. Make both code and output less ugly
         if script_tag:
             data = json.loads(script_tag.string)
             stats = data['props']['pageProps']['item']['stats']
-            data1 = {
+            data = {
                 'Amount': stats['item_count'],
                 'AvgBuyout': f"{stats['avg_price'] // 100}s {stats['avg_price'] % 100}c",
                 'MinBuyout': f"{stats['minimum_buyout'] // 100}s {stats['minimum_buyout'] % 100}c"
         }
-            await ctx.send(f"Void Crystal - {data1['Amount']}, {data1['AvgBuyout']}\nSource: https://www.wowauctions.net/")
+            await ctx.send(f"Void Crystal - # of auctions: {data['Amount']} Price: {data['AvgBuyout']}\nSource: https://www.wowauctions.net/")
         else:
             ctx.send("Error: the website layout has changed and the bot needs updating.")
     except Exception as e:
-        await ctx.send(f"For various possible reasons, an error occured. Error: {e}")
+        print(f"Stonks pcheck2 error: {e}")
+        await ctx.send("An error has occured.")
 
 
 @bot.command()
