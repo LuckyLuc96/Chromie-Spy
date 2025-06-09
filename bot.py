@@ -30,7 +30,6 @@ async def armory(ctx, *, character_name):
     armory_url = f"https://www.chromiecraft.com/en/armory/?character/ChromieCraft/{upper_name}"
     await ctx.send(f"The armory link for **{upper_name}**:\n<{armory_url}>")
 
-
 @bot.command()
 async def serverstats(ctx):
     server_status = requests.get("https://www.chromiecraft.com/en/server-status/")
@@ -47,8 +46,8 @@ async def serverstats(ctx):
 
 @bot.command()
 async def stonks(ctx):
-    await ctx.send("Here's the Chromie Industrial Average (CIA)")
-    items = ["netherweave-cloth-21877", "void-crystal-22450"]
+    items = ["Netherweave-Cloth-21877", "Void-Crystal-22450"]
+    answer = ""
     for item in items:
         try:
             #This is so I can have the above item names work inside both the url and for the user to see in the output.
@@ -65,12 +64,12 @@ async def stonks(ctx):
                     'Amount': stats['item_count'],
                     'AvgBuyout': f"{stats['avg_price'] // 100}s {stats['avg_price'] % 100}c"
                 }
-                await ctx.send(f"{item_renamed} - # of auctions: {data['Amount']} Price: {data['AvgBuyout']}")
+                answer += (f"\n{item_renamed} - # of auctions: {data['Amount']} Price: {data['AvgBuyout']}")
         except Exception as e:
             print(f"Stonks pcheck error: {e}")
             await ctx.send("An error has occured.")
-
-
+    await ctx.send("Here's the Chromie Industrial Average (CIA)")
+    await ctx.send(answer,"\nSource: https://www.wowauctions.net/")
 @bot.command()
 async def echo(ctx, *, message):
     await ctx.send(message)
