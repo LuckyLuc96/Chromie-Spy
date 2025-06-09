@@ -4,7 +4,7 @@ from key import TOKEN
 import requests
 import json
 from bs4 import BeautifulSoup
-
+import re
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -46,43 +46,29 @@ async def serverstats(ctx):
     await ctx.send(f"Quick Chromie Craft Stats:\n{player_count}\nAlliance v Horde (Online numbers)\n{faction_count}")
 
 @bot.command()
-async def stonks(ctx): #todo. Make both code and output less ugly
-    try:
-        pcheck1 = requests.get("https://www.wowauctions.net/auctionHouse/chromie-craft/chromiecraft/mergedAh/netherweave-cloth-21877")
-        pcheck1_soup = BeautifulSoup(pcheck1.text, 'html.parser')
-        script_tag = pcheck1_soup.find('script', id='__NEXT_DATA__')
-
-        if script_tag:
-            data = json.loads(script_tag.string)
-            stats = data['props']['pageProps']['item']['stats']
-            data = {
-                'Amount': stats['item_count'],
-                'AvgBuyout': f"{stats['avg_price'] // 100}s {stats['avg_price'] % 100}c",
-                'MinBuyout': f"{stats['minimum_buyout'] // 100}s {stats['minimum_buyout'] % 100}c"
-        }
-            await ctx.send(f"Here's the Chromie Industrial Average (CIA)\nNetherweave Cloth - # of auctions: {data['Amount']} Price: {data['AvgBuyout']}")
-    except Exception as e:
-        print(f"Stonks pcheck1 error: {e}")
-
-    try:
-        pcheck2 = requests.get("https://www.wowauctions.net/auctionHouse/chromie-craft/chromiecraft/mergedAh/void-crystal-22450")
-        pcheck2_soup = BeautifulSoup(pcheck2.text, 'html.parser')
-        script_tag = pcheck2_soup.find('script', id='__NEXT_DATA__')
-
-        if script_tag:
-            data = json.loads(script_tag.string)
-            stats = data['props']['pageProps']['item']['stats']
-            data = {
-                'Amount': stats['item_count'],
-                'AvgBuyout': f"{stats['avg_price'] // 100}s {stats['avg_price'] % 100}c",
-                'MinBuyout': f"{stats['minimum_buyout'] // 100}s {stats['minimum_buyout'] % 100}c"
-        }
-            await ctx.send(f"Void Crystal - # of auctions: {data['Amount']} Price: {data['AvgBuyout']}\nSource: https://www.wowauctions.net/")
-        else:
-            ctx.send("Error: the website layout has changed and the bot needs updating.")
-    except Exception as e:
-        print(f"Stonks pcheck2 error: {e}")
-        await ctx.send("An error has occured.")
+async def stonks(ctx):
+    await ctx.send("Here's the Chromie Industrial Average (CIA)")
+    items = ["netherweave-cloth-21877", "void-crystal-22450"]
+    for item in items:
+        try:
+            #This is so I can have the above item names work inside both the url and for the user to see in the output.
+            item_renamed = "".join(char for char in item.strip().replace('-', ' ') if char)
+            pattern = r'[0-9]' #regex to remove numbers
+            item_renamed = re.sub(pattern, '', item_renamed)
+            pcheck = requests.get(f"https://www.wowauctions.net/auctionHouse/chromie-craft/chromiecraft/mergedAh/{item}")
+            pcheck_soup = BeautifulSoup(pcheck.text, 'html.parser')
+            script_tag = pcheck_soup.find('script', id='__NEXT_DATA__')
+            if script_tag:
+                data = json.loads(script_tag.string)
+                stats = data['props']['pageProps']['item']['stats']
+                data = {
+                    'Amount': stats['item_count'],
+                    'AvgBuyout': f"{stats['avg_price'] // 100}s {stats['avg_price'] % 100}c"
+                }
+                await ctx.send(f"{item_renamed} - # of auctions: {data['Amount']} Price: {data['AvgBuyout']}")
+        except Exception as e:
+            print(f"Stonks pcheck error: {e}")
+            await ctx.send("An error has occured.")
 
 
 @bot.command()
