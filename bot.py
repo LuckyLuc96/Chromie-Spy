@@ -23,18 +23,20 @@ async def on_ready():
 @bot.command()
 async def armory(ctx, *, character_name):
     clean_name = ''.join(char for char in character_name.strip() if char.isalpha())
-    upper_name = clean_name[0].upper() + clean_name[1::]
     if not clean_name:
         await ctx.send("Please try again with a valid name.")
         return
-    armory_url = f"https://www.chromiecraft.com/en/armory/?character/ChromieCraft/{upper_name}"
-    await ctx.send(f"The armory link for **{upper_name}**:\n<{armory_url}>")
+    else:
+        upper_name = clean_name[0].upper() + clean_name[1::]
+        armory_url = f"https://www.chromiecraft.com/en/armory/?character/ChromieCraft/{upper_name}"
+        await ctx.send(f"The armory link for **{upper_name}**:\n<{armory_url}>")
 
+''' TBD
 @bot.command()
 async def serverstats(ctx):
     server_status = requests.get("https://www.chromiecraft.com/en/server-status/")
     soup = BeautifulSoup(server_status.text, 'html.parser')
-    player_count = soup.find('p', class_='lead h4') #All my attempts at using soup.find is returning with None objects. Needs some research
+    player_count = soup.find('p', class_='lead h4')
     if player_count:
         player_count = player_count.text().strip()
     faction_count = soup.find('p', class_='h4')
@@ -43,10 +45,10 @@ async def serverstats(ctx):
     soup.prettify()
 
     await ctx.send(f"Quick Chromie Craft Stats:\n{player_count}\nAlliance v Horde (Online numbers)\n{faction_count}")
-
+'''
 @bot.command()
 async def stonks(ctx):
-    items = ["Netherweave-Cloth-21877", "Void-Crystal-22450"]
+    items = ["Netherweave-Cloth-21877", "Void-Crystal-22450", "Khorium-Bar-23449"]
     answer = ""
     for item in items:
         try:
@@ -60,16 +62,24 @@ async def stonks(ctx):
             if script_tag:
                 data = json.loads(script_tag.string)
                 stats = data['props']['pageProps']['item']['stats']
-                data = {
-                    'Amount': stats['item_count'],
-                    'AvgBuyout': f"{stats['avg_price'] // 100}s {stats['avg_price'] % 100}c"
-                }
-                answer += (f"\n{item_renamed} - # of auctions: {data['Amount']} Price: {data['AvgBuyout']}")
+
+                gold = 0
+                silver = stats['avg_price'] // 100
+                copper = stats['avg_price'] % 100
+                item_amount = stats['item_count']
+                if silver > 100:
+                    gold = silver // 100
+                    silver = silver % 100
+
+                answer += (f"{item_renamed} - Number: {item_amount} Average Price: {gold}g {silver}s {copper}c\n")
         except Exception as e:
             print(f"Stonks pcheck error: {e}")
             await ctx.send("An error has occured.")
+
     await ctx.send("Here's the Chromie Industrial Average (CIA)")
-    await ctx.send(answer,"\nSource: https://www.wowauctions.net/")
+    await ctx.send(answer)
+    await ctx.send("Source: https://www.wowauctions.net/")
+
 @bot.command()
 async def echo(ctx, *, message):
     await ctx.send(message)
