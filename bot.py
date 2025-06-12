@@ -1,4 +1,5 @@
 import discord
+import subprocess
 from discord.ext import commands
 from key import TOKEN
 import requests
@@ -81,7 +82,16 @@ async def stonks(ctx):
     await ctx.send("Source: https://www.wowauctions.net/")
 
 @bot.command()
-async def echo(ctx, *, message):
+async def echo(ctx, message):
     await ctx.send(message)
 
+@bot.command()
+async def serverup(ctx):
+    #stdout and err commands prevent printing results to console.
+    response = subprocess.run(['ping', '-c', '1', '-W', '4', 'logon.chromiecraft.com'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    if response == 0:
+        await ctx.send("The server is not responding..")
+    else:
+        await ctx.send("The server is up!")
+    print(response)
 bot.run(TOKEN)
